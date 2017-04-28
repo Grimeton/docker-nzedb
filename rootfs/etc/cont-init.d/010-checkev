@@ -81,7 +81,7 @@ export _PHP_TIMEZONE="${PHP_TIMEZONE:-${TZ}}";
 if [[ -f "${_PATH_TZ}/${_PHP_TIMEZONE}" ]]; then
     echo "PHP_TIMEZONE set to: ${_PHP_TIMEZONE}";
 else
-    echo "ERROR: PHP_TIMEZONE ${_PHP_TIMEZONE} does not exist. Please check {$_PATH_TZ} for available Timezones."
+    echo "ERROR: PHP_TIMEZONE ${_PHP_TIMEZONE} does not exist. Please check ${_PATH_TZ} for available Timezones."
     echo "ERROR: SETTING DEFAULT: Europe/Berlin";
     export _PHP_TIMEZONE="Europe/Berlin";
 fi
