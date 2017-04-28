@@ -1,0 +1,9 @@
+#!/usr/bin/with-contenv bash
+. /opt/scripts/install.rc
+
+if [[ "${_NZEDB_INSTALLED}" == "1" ]]; then
+    echo "System has been configured. Changing nginx configuration.";
+    /opt/scripts/mm.pl /opt/files/config/ || __exit 1;
+fi
+__exit 0
+

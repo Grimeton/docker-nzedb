@@ -1,0 +1,11 @@
+#!/usr/bin/with-contenv bash
+. /opt/scripts/install.rc;
+
+if [[ "${_RUN_REFRESH}x" != "x" && "${_RUN_REFRESH}" != "0" ]]; then
+    if [[ -f "${_PATH_SERVICES}/refresh/down" ]]; then
+        rm "${_PATH_SERVICES}/refresh/down";
+    fi
+else 
+    touch "${_PATH_SERVICES}/refresh/down";
+fi
+

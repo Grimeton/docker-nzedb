@@ -1,0 +1,61 @@
+#!/bin/bash
+
+if [[ "${__SCRIPT}x" == "x" ]]; then
+    export __SCRIPT="$0";
+fi
+
+IPATH="${_PATH_CONTINIT}/.$(basename $__SCRIPT)_i";
+EPATH="${_PATH_CONTINIT}/.$(basename $__SCRIPT)_e";
+
+function __check_status {
+    __is_installed;
+    __last_failed;
+}
+function __check_all_status {
+
+    for f in "${_PATH_CONTINIT}/."*_e; do
+        if [[ -f "$f" ]]; then
+            return 1;
+        fi
+    done
+    return 0;
+
+}
+function __exit {
+
+    if [[ "$1" != "0" ]]; then
+        __mark_failed;
+        echo "ERROR: $(basename $__SCRIPT) exited with error code: $1";
+    else
+        __mark_installed;
+    fi
+    exit $1;
+}
+
+function __is_installed {
+    if [[ -f "$IPATH" ]]; then
+        echo "Already installed. Exiting.";
+        exit 0;
+    fi
+    return 0;
+}
+function __last_failed {
+
+    if [[ -f "$EPATH" ]]; then
+        echo "Last installation failed. Trying again.";
+    fi
+    return 0;
+}
+function __mark_failed {
+    if [[ -f "$IPATH" ]]; then
+        rm "$IPATH";
+    fi
+    touch "$EPATH";
+}
+function __mark_installed {
+    if [[ -f "$EPATH" ]]; then
+        rm "$EPATH";
+    fi
+    touch "$IPATH";
+}
+

@@ -1,0 +1,30 @@
+#!/usr/bin/with-contenv bash
+. /opt/scripts/install.rc;
+__check_status;
+
+echo "================================================================================"
+echo "Converting templates."
+echo "================================================================================"
+echo ""
+/opt/scripts/mm.pl /opt/files/config/;
+lastexec=$?;
+__exit $lastexec;
+
+
+#echo "=== Converting nginx configuration template."
+#envsubst '$_PATH_INSTALL_ROOT $_PATH_WEB_RESOURCES $_PATH_WEB_SERVER_ROOT $_WEB_ROOT $_WEB_ROOT_BASE $_WEB_SERVER_HTTP_PORT $_WEB_SERVER_HTTPS_PORT $_WEB_SERVER_NAME' < /opt/files/config/nginx.conf.tpl > /etc/nginx/sites-available/default || exit 5;
+#echo "--- Done."
+#echo ""
+#echo "=== Converting composer authentication template."
+#envsubst '$_GIT_TOKEN' < /opt/files/config/composer.auth.json.tpl > /home/www-data/.composer/auth.json || exit 6;
+#echo "--- Done."
+#echo "=== Setting permissions on composer authentication file."
+#chmod 600 /home/www-data/.composer/auth.json;
+#chown www-data:www-data /home/www-data/.composer/auth.json;
+#echo "--- Done."
+#echo ""
+#echo "=== Converting php.ini configuration template."
+#envsubst '$_PHP_MAX_EXECUTION_TIME $_PHP_MEMORY_LIMIT $_PHP_TIMEZONE' < /opt/files/config/php.ini.tpl > /etc/php/7.0/fpm/php.ini || exit 7;
+#echo "--- Done.";
+#echo "";
+#

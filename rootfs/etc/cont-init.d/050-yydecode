@@ -1,0 +1,19 @@
+#!/usr/bin/with-contenv bash
+. /opt/scripts/install.rc;
+__check_status;
+
+echo "================================================================================"
+echo "Installing YYDecode."
+echo "================================================================================"
+echo "=== Downloading ..."
+curl -s -L -o /tmp/yydecode.deb 'http://archive.getdeb.net/ubuntu/pool/apps/y/yydecode/yydecode_0.2.10-1~getdeb1_amd64.deb' 2>&1 > /dev/null || __exit 14;
+echo "--- Done."
+echo ""
+echo "=== Installing ..."
+dpkg --install /tmp/yydecode.deb || __exit 15;
+rm /tmp/yydecode.deb
+echo "--- Done."
+hash -r;
+echo ""
+__exit 0;
+

@@ -1,0 +1,200 @@
+#!/usr/bin/with-contenv bash
+. /opt/scripts/install.rc
+
+echo "================================================================================"
+echo "Starting installation ..."
+echo "================================================================================"
+echo "=== Checking for environment variables."
+echo ""
+
+export _CONTAINER_EV="/var/run/s6/container_environment";
+echo -n "${_CONTAINER_EV}" > "${_CONTAINER_EV}/_CONTAINER_EV"
+export _PATH_CONTINIT="/etc/cont-init.d";
+echo -n "${_PATH_CONTINIT}" > "${_CONTAINER_EV}/_PATH_CONTINIT";
+export _PATH_SERVICES="/etc/services.d";
+echo -n "${_PATH_SERVICES}" > "${_CONTAINER_EV}/_PATH_SERVICES";
+export _PATH_TZ="/usr/share/zoneinfo";
+echo -n "${_PATH_TZ}" > "${_CONTAINER_EV}/_PATH_TZ";
+
+if [[ "${TZ}x" == "x" || ! -f "${_PATH_TZ}/${TZ}" ]]; then
+    export TZ="Europe/Berlin";
+fi
+echo "${TZ}" > "${_CONTAINER_EV}/TZ";
+
+export _PATH_CUSTOM_CONFIG="${PATH_CUSTOM_CONFIG:-}";
+if [[ "${_PATH_CUSTOM_CONFIG}x" != "x" ]]; then
+    if [[ "${_PATH_CUSTOM_CONFIG}" != "/" && ${_PATH_CUSTOM_CONFIG} =~ ^(.*)/$ ]]; then
+        export _PATH_CUSTOM_CONFIG="${BASH_REMATCH[1]}";
+    fi
+fi
+echo "PATH_CUSTOM_CONFIG set to ${_PATH_CUSTOM_CONFIG:-NOT SET}";
+echo -n "${_PATH_CUSTOM_CONFIG}" > "${_CONTAINER_EV}/_PATH_CUSTOM_CONFIG";
+
+export _PATH_INSTALL_ROOT="${PATH_INSTALL_ROOT:-/opt/http}";
+if [[ "${_PATH_INSTALL_ROOT}" =~ ^(.*)/$ ]]; then
+    export _PATH_INSTALL_ROOT="${BASH_REMATCH[1]}";
+fi
+echo "PATH_INSTALL_ROOT set to ${_PATH_INSTALL_ROOT}"
+echo -n "${_PATH_INSTALL_ROOT}" > "${_CONTAINER_EV}/_PATH_INSTALL_ROOT";
+echo ""
+
+export _PATH_WEB_RESOURCES="${PATH_WEB_RESOURCES:-/data/resources}"
+if [[ "${_PATH_WEB_RESOURCES}" =~ ^(.*)/$ ]]; then
+    export _PATH_WEB_RESOURCES="${BASH_REMATCH[1]}"
+fi
+echo "PATH_WEB_RESOURCES set to ${_PATH_WEB_RESOURCES}"
+echo -n "${_PATH_WEB_RESOURCES}" > "${_CONTAINER_EV}/_PATH_WEB_RESOURCES";
+echo ""
+
+export _PATH_WEB_SERVER_ROOT="${PATH_WEB_SERVER_ROOT:-${_PATH_INSTALL_ROOT}/www}"
+if [[ "${_PATH_WEB_SERVER_ROOT}" =~ ^(.*)/$ ]]; then
+    export _PATH_WEB_SERVER_ROOT="${BASH_REMATCH[1]}"
+fi
+echo "PATH_WEB_SERVER_ROOT set to ${_PATH_WEB_SERVER_ROOT}"
+echo -n "${_PATH_WEB_SERVER_ROOT}" > "${_CONTAINER_EV}/_PATH_WEB_SERVER_ROOT";
+echo ""
+
+export _PHP_MAX_EXECUTION_TIME="${PHP_MAX_EXECUTION_TIME:-120}";
+if [[ ${_PHP_MAX_EXECUTION_TIME} =~ ^[0-9]+$ ]]; then
+    echo "PHP_MAX_EXECUTION_TIME set to: ${_PHP_MAX_EXECUTION_TIME}"
+else
+    echo "ERROR: PHP_MAX_EXECUTION_TIME MUST CONTAIN NUMERIC CHARACTERS ONLY: ${_PHP_MAX_EXECUTION_TIME}"
+    echo "ERROR: SETTING DEFAULT OF 300";
+    export _PHP_MAX_EXECUTION_TIME=300;
+fi
+echo -n "${_PHP_MAX_EXECUTION_TIME}" > "${_CONTAINER_EV}/_PHP_MAX_EXECUTION_TIME";
+echo "";
+
+export _PHP_MEMORY_LIMIT="${PHP_MEMORY_LIMIT:-1G}"
+if [[ ${_PHP_MEMORY_LIMIT} =~ ^[0-9]+(k|m|g|K|M|G)$ ]]; then
+    echo "PHP_MEMORY_LIMIT set to: ${_PHP_MEMORY_LIMIT}"
+else
+    echo "ERROR: PHP_MEMORY_LIMIT CONTAINS UNKNOWN CHARACTERS: ${_PHP_MEMORY_LIMIT}"
+    echo "ERROR: SETTING DEFAULT OF 1GB"
+    export _PHP_MEMORY_LIMIT="1GB";
+fi
+echo -n "${_PHP_MEMORY_LIMIT}" > "${_CONTAINER_EV}/_PHP_MEMORY_LIMIT";
+echo "";
+
+export _PHP_TIMEZONE="${PHP_TIMEZONE:-${_TZ}}";
+if [[ -f "${_PATH_TZ}/${_PHP_TIMEZONE}" ]]; then
+    echo "PHP_TIMEZONE set to: ${_PHP_TIMEZONE}";
+else
+    echo "ERROR: PHP_TIMEZONE ${_PHP_TIMEZONE} does not exist. Please check {$_PATH_TZ} for available Timezones."
+    echo "ERROR: SETTING DEFAULT: Europe/Berlin";
+    export _PHP_TIMEZONE="Europe/Berlin";
+fi
+echo -n "${_PHP_TIMEZONE}" > "${_CONTAINER_EV}/_PHP_TIMEZONE";
+echo "";
+
+export _REFRESH_POSTPROCESS_OPTIONS="${REFRESH_POSTPROCESS_OPTIONS:-nfo mov tv ama}"
+_NEW_REFRESH_POSTPROCESS_OPTIONS="";
+for ppo in ${_REFRESH_POSTPROCESS_OPTIONS}; do
+    if [[ "$ppo" != "ama" && "$ppo" != "add" && "$ppo" != "mov" && "$ppo" != "nfo" && "$ppo" != "sha" && "$ppo" != "tv" ]]; then
+        echo "Option ${ppo} is not recognized. Ignoring."
+    else
+        _NEW_REFRESH_POSTPROCESS_OPTIONS="${_NEW_REFRESH_POSTPROCESS_OPTIONS} ${ppo}";
+    fi
+done
+export _REFRESH_POSTPROCESS_OPTIONS="${_NEW_REFRESH_POSTPROCESS_OPTIONS}";
+echo "REFRESH_POSTPROCESS_OPTIONS set to: ${_REFRESH_POSTPROCESS_OPTIONS}";
+echo -n "${_REFRESH_POSTPROCESS_OPTIONS}" > "${_CONTAINER_EV}/_REFRESH_POSTPROCESS_OPTIONS"
+echo "_REFRESH_POSTPROCESS_OPTIONS=\"${_REFRESH_POSTPROCESS_OPTIONS}\"" > "/opt/scripts/refresh.conf";
+echo ""
+
+export _RUN_WEB_SERVER="${RUN_WEB_SERVER:-1}";
+echo "RUN_WEB_SERVER set to ${_RUN_WEB_SERVER}";
+echo -n "${_RUN_WEB_SERVER}" > "${_CONTAINER_EV}/_RUN_WEB_SERVER";
+if [[ "${_RUN_WEB_SERVER}" == "0" ]]; then
+    touch "${_PATH_SERVICES}/nginx/down";
+    touch "${_PATH_SERVICES}/php-fpm7.0/down";
+else
+    for f in nginx/down php-fpm7.0/down; do
+        if [[ -f "${_PATH_SERVICES}/${f}" ]]; then
+            rm "${_PATH_SERVICES}/${f}";
+        fi
+    done
+fi
+
+export _RUN_REFRESH="${RUN_REFRESH:-0}"
+echo "RUN_REFRESH set to ${_RUN_REFRESH}"
+echo -n "${_RUN_REFRESH}" > "${_CONTAINER_EV}/_RUN_REFRESH";
+if [[ "${_RUN_REFRESH}" == "0" ]]; then
+    touch "${_PATH_SERVICES}/refresh/down";
+else
+    for f in refresh/down; do
+        if [[ -f "${_PATH_SERVICES}/${f}" ]]; then
+            rm "${_PATH_SERVICES}/${f}";
+        fi
+    done
+fi
+echo ""
+
+export _WEB_ROOT="${WEB_ROOT:-}"
+if [[ "${_WEB_ROOT}" != "/" ]]; then
+    if [[ "${_WEB_ROOT}" =~ ^(.*)/$ ]]; then
+        export _WEB_ROOT="${BASH_REMATCH[1]}"
+    fi
+else
+    export _WEB_ROOT="";
+fi
+echo -n "WEB_ROOT set to: ${_WEB_ROOT:-/}"
+echo -n "${_WEB_ROOT}" > "${_CONTAINER_EV}/_WEB_ROOT";
+echo ""
+
+export _WEB_SERVER_HTTP_PORT="${WEB_SERVER_HTTP_PORT:-80}"
+if [[ $_WEB_SERVER_HTTP_PORT =~ ^[0-9]+$ ]]; then
+    if [[ $_WEB_SERVER_HTTP_PORT -gt 0 && $_WEB_SERVER_HTTP_PORT -lt 65536 ]]; then
+
+        echo "WEB_SERVER_HTTP_PORT: ${_WEB_SERVER_HTTP_PORT}"
+    else
+        echo "ERROR: WEB_SERVER_HTTP_PORT OUT OF RANGE: ${_WEB_SERVER_HTTP_PORT}";
+        echo "ERROR: SETTING DEFAULT PORT 80";
+        export _WEB_SERVER_HTTP_PORT=80;
+    fi
+else 
+    echo "ERROR: WEB_SERVER_HTTP_PORT MUST CONTAIN NUMERIC CHARACTERS ONLY: ${_WEB_SERVER_HTTP_PORT}"
+    echo "SETTING DEFAULT PORT 80"
+    export _WEB_SERVER_HTTP_PORT=80;
+fi
+echo -n "${_WEB_SERVER_HTTP_PORT}" > "${_CONTAINER_EV}/_WEB_SERVER_HTTP_PORT";
+echo ""
+
+export _WEB_SERVER_HTTPS_PORT="${WEB_SERVER_HTTPS_PORT:-443}"
+if [[ $_WEB_SERVER_HTTPS_PORT =~ ^[0-9]+$ ]]; then
+    if [[ $_WEB_SERVER_HTTPS_PORT -gt 0 && $_WEB_SERVER_HTTPS_PORT -lt 65535 ]]; then
+
+        echo "WEB_SERVER_HTTPS_PORT: ${_WEB_SERVER_HTTPS_PORT}"
+    else
+        echo "ERROR: WEB_SERVER_HTTPS_PORT OUT OF RANGE: ${_WEB_SERVER_HTTPS_PORT}";
+        echo "ERROR: SETTING DEFAULT PORT 443";
+        export _WEB_SERVER_HTTPS_PORT=443;
+    fi
+else 
+    echo "ERROR: WEB_SERVER_HTTPS_PORT MUST CONTAIN NUMERIC CHARACTERS ONLY: ${_WEB_SERVER_HTTPS_PORT}"
+    echo "SETTING DEFAULT PORT 443"
+    export _WEB_SERVER_HTTPS_PORT=443;
+fi
+echo -n "${_WEB_SERVER_HTTPS_PORT}" > "${_CONTAINER_EV}/_WEB_SERVER_HTTPS_PORT";
+echo ""
+export _WEB_SERVER_NAME="${WEB_SERVER_NAME:-_}"
+echo "WEB_SERVER_NAME: ${_WEB_SERVER_NAME}"
+echo -n "${_WEB_SERVER_NAME}" > "${_CONTAINER_EV}/_WEB_SERVER_NAME";
+echo ""
+
+export _GIT_TOKEN="${GIT_TOKEN:?WARNING: GIT TOKEN IS MISSING ...}"
+echo "GIT_TOKEN: ${_GIT_TOKEN}"
+echo -n "${_GIT_TOKEN}" > "${_CONTAINER_EV}/_GIT_TOKEN";
+echo ""
+if [[ -f "${_PATH_INSTALL_ROOT}/configuration/install.lock" ]]; then
+    export _NZEDB_INSTALLED=1;
+else
+    export _NZEDB_INSTALLED=0;
+fi
+echo -n "${_NZEDB_INSTALLED}" > "${_CONTAINER_EV}/_NZEDB_INSTALLED";
+
+if [[ "${_GIT_TOKEN}x" == "x" ]]; then
+    echo "WARNING: NO GIT TOKEN SUPPLIED. INSTALLATION WILL FAIL."
+    exit 199;
+fi
+

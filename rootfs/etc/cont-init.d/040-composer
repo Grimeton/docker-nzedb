@@ -1,0 +1,24 @@
+#!/usr/bin/with-contenv bash
+. /opt/scripts/install.rc;
+__check_status;
+echo "================================================================================"
+echo "Installing composer."
+echo "================================================================================"
+echo "=== Downloading ..."
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" || __exit 1;
+echo "--- Done."
+echo ""
+echo "=== Verifying ..."
+php -r 'if (hash_file("SHA384", "composer-setup.php") === preg_filter(":^.*?<pre>|</pre>.*$:s", "", file_get_contents("https://composer.github.io/pubkeys.html"))) { exit(0); } else { exit(1);};' || __exit 2;
+echo "--- Done."
+echo ""
+echo "=== Running setup ..."
+php composer-setup.php --install-dir=/usr/local/bin --filename=composer;
+echo "--- Done."
+echo ""
+echo "=== Deleting setup files ..."
+php -r "unlink('composer-setup.php');" || __exit 4;
+echo "--- Done."
+echo ""
+__exit 0;
+

@@ -1,0 +1,33 @@
+#!/usr/bin/with-contenv bash
+. /opt/scripts/install.rc;
+__check_status;
+
+echo "================================================================================"
+echo "Copying resources folder to its new destination."
+echo "================================================================================"
+echo ""
+
+if [[ ! -d "${_PATH_WEB_RESOURCES}" ]]; then
+    echo "=== ${_PATH_WEB_RESOURCES} does not exist. Creating ..."
+    mkdir -p "${_PATH_WEB_RESOURCES}" || __exit 9;
+    echo "--- Done."
+    echo ""
+else
+    echo "=== ${_PATH_WEB_RESOURCES} exists. Not going to copy anything over.";
+    __exit 0;
+fi
+
+echo "=== Copying ..."
+if [[ "${_PATH_WEB_RESOURCES}" != "${_PATH_INSTALL_ROOT}/resources" ]]; then
+    if [[ -d "${_PATH_INSTALL_ROOT}/resources" ]]; then
+        cp -r "${_PATH_INSTALL_ROOT}/resources"/* "${_PATH_WEB_RESOURCES}" || __exit 10;
+        chown -R www-data:www-data "${_PATH_WEB_RESOURCES}" || __exit 11; 
+        echo "--- Done."
+    else
+        echo "--- ERROR: Source path ${_PATH_INSTALL_ROOT}/resources does not exist."
+        __exit 12;
+    fi
+fi
+echo ""
+__exit 0;
+

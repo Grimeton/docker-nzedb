@@ -1,0 +1,50 @@
+#!/usr/bin/with-contenv bash
+. /opt/scripts/install.rc;
+__check_status;
+
+echo "================================================================================"
+echo "Preparing file system."
+echo "================================================================================"
+echo "=== Checking for PATH_INSTALL_ROOT: ${_PATH_INSTALL_ROOT}"
+if [[ ! -d "${_PATH_INSTALL_ROOT}" ]]; then
+    echo "--- Doesn't exist. Creating."
+    mkdir -p "${_PATH_INSTALL_ROOT}";
+else
+    echo "--- Exists."
+fi
+echo ""
+echo "=== Checking for /home/www-data"
+if [[ ! -d "/home/www-data" ]]; then
+    echo "--- Doesn't exist. Creating."
+    mkdir -p /home/www-data;
+    chown www-data:www-data /home/www-data;
+    chmod 755 /home/www-data;
+else
+    echo "--- Exists."
+fi
+
+echo ""
+echo "=== Checking if the Composer auth config directory exists."
+if [[ ! -d "/home/www-data/.composer" ]]; then 
+    echo "--- Doesn't exist. Creating..."
+    mkdir -p /home/www-data/.composer;
+    chmod 755 /home/www-data/.composer;
+    chown www-data:www-data /home/www-data/.composer
+else
+    echo "--- Exists"
+fi
+
+echo ""
+echo "=== Changing home directory of user www-data to /home/www-data"
+usermod -d /home/www-data www-data;
+echo "--- Done."
+echo ""
+echo "=== Setting permissions and ownership of directories."
+chown www-data:www-data "${_PATH_INSTALL_ROOT}";
+chown www-data:www-data /var/lib/php/sessions;
+chmod 775 "${_PATH_INSTALL_ROOT}";
+chmod 777 /run/php
+echo "--- Done.";
+echo ""
+__exit 0;
+

@@ -1,0 +1,38 @@
+#!/usr/bin/with-contenv bash
+. /opt/scripts/install.rc;
+__check_status;
+if __check_all_status; then
+
+    if [[ "${_RUN_WEB_SERVER}" == "0" && "${_RUN_REFRESH}" == "0" ]]; then
+        echo ""
+        echo "================================================================================"
+        echo "WARNING - NEITHER THE WEB SERVER NOR THE REFRESH PROCESS WAS ACTIVATED."
+        echo "BESIDES WATCHING THE MOON NOT A LOT WILL HAPPEN HERE."
+        echo "================================================================================"
+        echo ""
+    elif [[ "${_RUN_WEB_SERVER}" == "0" ]]; then
+        echo ""
+        echo "================================================================================"
+        echo "INSTALLATION SUCCESSFULLY FINISHED."
+        echo "WEB SERVER NOT ACTIVATED."
+        echo "CHECK THE CONTAINER'S LOGS FOR OUTPUT OF THE UPDATER"
+        echo "================================================================================"
+        echo ""
+    else 
+        echo ""
+        echo "================================================================================"
+        echo "INSTALLATION SUCCESSFULLY FINISHED."
+        echo "PLEASE GO TO http://${_WEB_SERVER_NAME}${WEB_ROOT}/install/ to finish your installation."
+        echo "================================================================================"
+        echo ""
+    fi
+    __exit 0;
+else
+    echo ""
+    echo "================================================================================"
+    echo "INSTALLATION NOT SUCCESSFULL - CHECK THE ERRORS AND TRY AGAIN."
+    echo "================================================================================"
+    echo ""
+    __exit 1;
+fi
+

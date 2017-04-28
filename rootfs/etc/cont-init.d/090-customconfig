@@ -1,0 +1,18 @@
+#!/usr/bin/with-contenv bash
+. /opt/scripts/install.rc;
+__check_status;
+
+if [[ "${_PATH_CUSTOM_CONFIG}x" == "x" ]]; then
+    echo "No custom configuration path set. Exiting.";
+    __exit 0;
+fi
+
+if [[ -f "${_PATH_CUSTOM_CONFIG}/nzedb/config.php" ]]; then
+    cp "${_PATH_CUSTOM_CONFIG}/nzedb/config.php" "${_PATH_INSTALL_ROOT}/configuration/" || __exit 1;
+    touch "${_PATH_INSTALL_ROOT}/configuration/install.lock" || __exit 2;
+else
+    echo "No custom configuration for nZEDb found in ${_PATH_CUSTOM_CONFIG}/nzedb/config.php .";
+fi
+
+__exit 0;
+
