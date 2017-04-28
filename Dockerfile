@@ -1,9 +1,6 @@
 FROM ubuntu:yakkety
 LABEL maintainer "Grimeton (Grimages) <grimages@fullmesh.de>"
 
-ARG CONFD_VERSION="0.11.0"
-ARG CONFD_ARCH="amd64"
-ARG CONFD_OS="linux"
 ARG S6_VERSION="v1.19.1.1"
 ARG S6_ARCH="amd64"
 ARG DEBIAN_FRONTEND="noninteractive"
