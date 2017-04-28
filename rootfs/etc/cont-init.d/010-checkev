@@ -16,6 +16,7 @@ echo -n "${_PATH_SERVICES}" > "${_CONTAINER_EV}/_PATH_SERVICES";
 export _PATH_TZ="/usr/share/zoneinfo";
 echo -n "${_PATH_TZ}" > "${_CONTAINER_EV}/_PATH_TZ";
 
+
 if [[ "${TZ}x" == "x" || ! -f "${_PATH_TZ}/${TZ}" ]]; then
     export TZ="Europe/Berlin";
 fi
@@ -76,7 +77,7 @@ fi
 echo -n "${_PHP_MEMORY_LIMIT}" > "${_CONTAINER_EV}/_PHP_MEMORY_LIMIT";
 echo "";
 
-export _PHP_TIMEZONE="${PHP_TIMEZONE:-${_TZ}}";
+export _PHP_TIMEZONE="${PHP_TIMEZONE:-${TZ}}";
 if [[ -f "${_PATH_TZ}/${_PHP_TIMEZONE}" ]]; then
     echo "PHP_TIMEZONE set to: ${_PHP_TIMEZONE}";
 else
