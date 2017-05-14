@@ -131,6 +131,20 @@ else
 fi
 echo ""
 
+export _RUN_REFRESH_MULTI="${RUN_REFRESH_MULTI:-0}";
+echo "RUN_REFRESH_MULTI set to ${_RUN_REFRESH_MULTI}"
+echo -n "${_RUN_REFRESH_MULTI}" > "${_CONTAINER_EV}/_RUN_REFRESH_MULTI";
+if [[ "${_RUN_REFRESH_MULTI}" == "0" ]]; then
+    touch "${_PATH_SERVICES}/refresh_multi/down";
+else 
+    for f in refresh_multi/down; do
+        if [[ -f "${_PATH_SERVICES}/${f}" ]]; then
+            rm "${_PATH_SERVICES}/${f}";
+        fi
+    done
+fi
+echo ""
+
 export _WEB_ROOT="${WEB_ROOT:-}"
 if [[ "${_WEB_ROOT}" != "/" ]]; then
     if [[ "${_WEB_ROOT}" =~ ^(.*)/$ ]]; then

@@ -49,12 +49,19 @@ server {
        rewrite ^[+ $WEB_ROOT +]/([^/\.]+)/?$ [+ $WEB_ROOT +]/index.php?page=$1 last;
    }
    location ~* ^[+ $WEB_ROOT +](/.*\.php)$ {
+       set $_HTTPS "off";
+       if ($http_x_offload_ssl ~* "on") {
+           set $_HTTPS "on";
+       }
+       if ($https ~* on) {
+           set $_HTTPS "on";
+       }
        include /etc/nginx/fastcgi_params;
        fastcgi_buffering off;
        fastcgi_cache off;
        fastcgi_ignore_client_abort off;
        fastcgi_index index.php;
-       fastcgi_param HTTPS $https if_not_empty;
+       fastcgi_param HTTPS $_HTTPS;
        fastcgi_param SCRIPT_FILENAME $document_root$1;
        fastcgi_param SERVER_NAME [+ $WEB_SERVER_NAME +];
        fastcgi_pass unix:/var/run/php/php7.0-fpm.sock;
